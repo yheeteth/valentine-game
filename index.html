@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>girlfriend.exe</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Comic Sans MS', cursive, sans-serif;
+      background: black;
+      color: #00ff88;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #loadingScreen {
+      text-align: left;
+      font-size: 18px;
+      white-space: pre-line;
+    }
+
+    #mainContent {
+      display: none;
+      text-align: center;
+      font-family: Arial, sans-serif;
+      color: white;
+      background: linear-gradient(135deg, #ff9ecf, #ffd6ec);
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    #gameArea {
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 40px;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #yes {
+      background-color: #ff4da6;
+      color: white;
+    }
+
+    #yes:hover {
+      transform: scale(1.1);
+    }
+
+    #no {
+      background-color: white;
+      position: absolute;
+    }
+
+    .heart {
+      position: absolute;
+      font-size: 30px;
+      cursor: pointer;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-10vh); }
+      100% { transform: translateY(110vh); }
+    }
+
+    #score {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      font-size: 20px;
+      display: none;
+      color: white;
+    }
+
+    #noteDisplay {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 20px;
+      display: none;
+      max-width: 80%;
+      text-align: center;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Loading screen -->
+  <div id="loadingScreen"></div>
+
+  <!-- Main content -->
+  <div id="mainContent">
+    <div id="gameArea">
+      <h1 id="question">Will you be my Valentine? 💘</h1>
+      <button id="yes">YES 💖</button>
+      <button id="no">no.</button>
+      <div id="score">Hearts: 0 / 10 💖</div>
+      <div id="noteDisplay"></div>
+    </div>
+  </div>
+
+  <!-- Music -->
+  <audio id="music" src="love.mp3"></audio>
+
+  <script>
+    const loadingScreen = document.getElementById("loadingScreen");
+    const mainContent = document.getElementById("mainContent");
+    const gameArea = document.getElementById("gameArea");
+    const yesButton = document.getElementById("yes");
+    const noButton = document.getElementById("no");
+    const question = document.getElementById("question");
+    const scoreDisplay = document.getElementById("score");
+    const noteDisplay = document.getElementById("noteDisplay");
+    const music = document.getElementById("music");
+
+    let score = 0;
+    let gameInterval;
+
+    // ✅ Make the music loop
+    music.loop = true;
+
+    // Fake system boot messages
+    const bootMessages = [
+      "Booting girlfriend.exe...",
+      "Scanning for boyfriend...",
+      "Boyfriend detected.",
+      "Checking loyalty levels...",
+      "Loyalty acceptable.",
+      "Loading romantic subroutines...",
+      "System ready."
+    ];
+
+    // Random love notes
+    const notes = [
+      "You are my favorite person",
+      "I would still pick you in every lifetime.",
+      "You make everything feel safer.",
+      "You’re stuck with me now (threat)",
+      "Yes I made this because I like you A LOT"
+    ];
+
+    // -------------------------------
+    // 1️⃣ Boot sequence (typing effect)
+    let index = 0;
+    function typeBootMessage() {
+      if (index < bootMessages.length) {
+        loadingScreen.innerHTML += bootMessages[index] + "\n";
+        index++;
+        setTimeout(typeBootMessage, 800);
+      } else {
+        setTimeout(showMainContent, 1000);
+      }
+    }
+
+    function showMainContent() {
+      loadingScreen.style.display = "none";
+      mainContent.style.display = "flex";
+    }
+
+    typeBootMessage(); // Start boot sequence
+
+    // -------------------------------
+    // 2️⃣ NO button runs away
+    noButton.addEventListener("mouseover", function() {
+      const x = Math.random() * (window.innerWidth - 100);
+      const y = Math.random() * (window.innerHeight - 50);
+      noButton.style.left = x + "px";
+      noButton.style.top = y + "px";
+    });
+
+    // 3️⃣ YES button starts game
+    yesButton.addEventListener("click", function() {
+      question.innerText = "Catch 10 hearts to prove your love 😌💖";
+      yesButton.style.display = "none";
+      noButton.style.display = "none";
+      scoreDisplay.style.display = "block";
+      noteDisplay.style.display = "block";
+
+      music.play();
+      gameInterval = setInterval(createHeart, 1000); // hearts fall slower now
+    });
+
+    // -------------------------------
+    // 4️⃣ Heart creation
+    function createHeart() {
+      const heart = document.createElement("div");
+      heart.classList.add("heart");
+      heart.innerHTML = "💖";
+      heart.style.left = Math.random() * window.innerWidth + "px";
+      heart.style.animationDuration = (Math.random() * 5 + 8) + "s"; // 8-13 seconds fall
+
+      document.body.appendChild(heart);
+
+      heart.addEventListener("click", function() {
+        score++;
+        scoreDisplay.innerText = "Hearts: " + score + " / 10 💖";
+
+        // Show random note
+        const randomNote = notes[Math.floor(Math.random() * notes.length)];
+        noteDisplay.innerText = randomNote;
+
+        heart.remove();
+
+        if (score >= 10) {
+          winGame();
+        }
+      });
+
+      setTimeout(() => heart.remove(), 15000); // remove if not clicked
+    }
+
+    // -------------------------------
+    // 5️⃣ Win game
+    function winGame() {
+      clearInterval(gameInterval);
+      // ✅ keep music playing
+
+      gameArea.innerHTML = `
+        <h1 style="color:white;">You have my heart, always.</h1>
+        <p style="color:white; font-size:20px; max-width:600px; margin:auto;">
+         I know this is dramatic, but I genuinely feel lucky to have you.
+          I may be a little difficult sometimes, but I'm glad you have not given up on me.
+          You have been strong for yourself and for me and I appreciate that so so much, but please don't be scared
+          to let me hold you when you need to be vulnerable.
+          I'll be here for you whenever you need me, I promise.
+          Thank you for being my favorite person, my comfort,
+          and the only one I’d build a heart-catching game for hehe, well maybe I had some help :p
+          Happy Valentine’s Day sayang. I love you so so so much mwa mwa ( i wish i can put the cat sticker here) 💖
+        </p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
